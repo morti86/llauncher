@@ -1,0 +1,44 @@
+sel_model: wybierz model
+name: nazwa_modelu
+cache_type_k: typ pamięci podręczna K
+cache_type_v: typ pamięci podręczna V
+flash_attn: uwaga błyskowa
+json_schema: schemat JSON
+chat_template: szablon czatu
+ctx_size: rozmiar kontekstu
+n_cpu_moe: liczba warstw MoE offloadowanych do CPU
+reasoning_budget: budżet na rozumowanie
+port: port
+host: host
+theme: motyw
+presence_penalty: 'kara za powtórzenie alfa obecności (domyślnie: 0.00, 0.0 = wyłączone)'
+model_path: ścieżka_modelu
+mmproj: plik_wizyjny (mmproj)
+jinja: jinja
+reasoning: rozumowanie
+threads: liczba wątków
+api_key: klucz_API
+mmap: mmap
+gpu_layers: 'maks. liczba warstw do przechowywania w VRAM, albo dokładna liczba'
+batch_size: 'logiczne maksymalne rozmiary partii (domyślne: 2048)'
+ubatch_size: 'fizyczny maksymalny rozmiar partii (domyślny: 512)'
+json_schema_file: plik_schematu_json
+log_file: plik_logu
+log_timestamps: używaj znaczników czasu w logu
+top_p: 'sampling top-p (domyślne: 0.95, 1.0 = wyłączone)'
+top_k: 'sampling top-k (domyślne: 40, 0 = wyłączone)'
+min_p: 'sampling min-p (domyślne: 0.05, 0.0 = wyłączone)'
+repeat_penalty: 'kara za powtórzenie sekwencji tokenów (domyślne: 1.00, 1.0 = wyłączone)'
+temperature: temperatura
+chat_template_kwargs: 'dodatkowe parametry dla parsowania szablonu json'
+advanced: zaawansowane
+spec_type: dekodowanie spekulatywne
+spec_draft_n_max: 'liczba tokenów dla dek. spek. (16)'
+spec_draft_n_min: 'min. l. tokenów dla dek. spek.'
+special: 'specjalne tokeny na wyjściu (dom: false)'
+language: język
+st_running: 🟩 Uruchomiony
+st_nlocfnd: ⬛️ Nie znaleziono
+st_stopped: ⬜️ Zatrzymaj
+st_busy: 🟥 Zajęty / Nie odpowiada
+error: Błąd

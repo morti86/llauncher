@@ -1,0 +1,44 @@
+sel_model: select model
+name: model name
+cache_type_k: cache type K
+cache_type_v: cache type V
+flash_attn: flash attention
+json_schema: json schema
+chat_template: chat template
+ctx_size: context size
+n_cpu_moe: number of MoE layers offloaded to CPU
+reasoning_budget: reasoning budget
+port: port
+host: host
+theme: theme
+presence_penalty: 'repeat alpha presence penalty (default: 0.00, 0.0 = disabled)'
+model_path: model path
+mmproj: vision file (mmproj)
+jinja: jinja
+reasoning: reasoning
+threads: num of threads
+api_key: API key
+mmap: mmap
+gpu_layers: 'max. number of layers to store in VRAM, either an exact number'
+batch_size: 'logical maximum batch size (default: 2048)'
+ubatch_size: 'physical maximum batch size (default: 512)'
+json_schema_file: json schema file
+log_file: log file
+log_timestamps: use timestamps for log
+top_p: 'top-p sampling (default: 0.95, 1.0 = disabled)'
+top_k: 'top-k sampling (default: 40, 0 = disabled)'
+min_p: 'min-p sampling (default: 0.05, 0.0 = disabled)'
+repeat_penalty: 'penalize repeat sequence of tokens (default: 1.00, 1.0 = disabled)'
+temperature: temperature
+chat_template_kwargs: 'sets additional params for the json template parser, must be a valid json object string'
+advanced: advanced
+special: 'special tokens output enabled (default: false)'
+spec_type: spec type
+spec_draft_n_max: 'number of tokens for speculative decoding (16)'
+spec_draft_n_min: 'minimum tokens for speculative decoding'
+language: language
+st_running: 🟩 Running
+st_nlocfnd: ⬛️ Not found
+st_stopped: ⬜️ Stopped
+st_busy: 🟥 Busy / Not responding
+error: Error

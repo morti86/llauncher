@@ -1,0 +1,21 @@
+[package]
+name = "llauncher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+dirs = "6.0.0"
+env = "1.0.1"
+iced = { version = "0.14.0", features = ["tokio","sipper"] }
+num_cpus = "1.17.0"
+regex = "1.12.3"
+reqwest = "0.13.3"
+rfd = "0.17.2"
+rust-i18n = "4.0.0"
+serde = { version = "1.0.228", features = ["derive"] }
+tokio = { version = "1.52.2", features = ["full"] }
+toml = "1.1.2"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter", "chrono"] }
+which = { version = "8.0.2", features = ["tracing"] }
