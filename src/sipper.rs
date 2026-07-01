@@ -100,6 +100,9 @@ pub fn connect() -> impl Sipper<Never, LlamaEvent> {
 
 async fn still_running(c: Arc<RwLock<Option<Child>>>) -> bool {
     let mut c = c.write().await;
+    if c.is_none() {
+        return false;
+    }
     if let Some(r) = c.as_mut().map(async |d| d.try_wait() ) {
         let r = r.await;
         if let Ok(Some(_)) = r {

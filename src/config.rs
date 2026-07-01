@@ -11,8 +11,8 @@ const LB_WIDTH: f32 = 300.0;
 const PADDING: f32 = 5.0;
 const SPACING: f32 = 2.0;
 const HEIGHT: f32 = 38.0;
-pub const W_WIDTH: f32 = 1000.0;
-pub const W_HEIGHT: f32 = 940.0;
+pub const W_WIDTH: f32 = 800.0;
+pub const W_HEIGHT: f32 = 800.0;
 const BATCH_SIZES: &[u16] = &[128, 256, 512, 1024, 2048, 4096];
 
 macro_rules! label {
@@ -49,6 +49,14 @@ macro_rules! option {
             if let Some(v) = $value { text_input("", &format!("{}",v)).width($w).on_input($msgv) } else { text_input("","").width($w) }
         ].height(HEIGHT).padding(PADDING).spacing(SPACING)
     };
+    ($label:expr, $value:expr, $msg:expr, $msgv:expr, $w:expr, $selm:expr) => {
+        row![
+            checkbox($value.is_some()).label(t!($label)).width(LB_WIDTH).on_toggle($msg), 
+            if let Some(v) = $value { text_input("", &format!("{}",v)).width($w).on_input($msgv) } else { text_input("","").width($w) },
+            button_nf!("\u{e5fe}").on_press_maybe(if $value.is_some() { Some($selm) } else { None } )
+        ].height(HEIGHT).padding(PADDING).spacing(SPACING)
+    };
+
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Default)]
@@ -158,6 +166,7 @@ pub struct LlamaConfig {
     pub spec_type: Option<NgramMethod>,
     pub spec_draft_n_max: Option<u16>,
     pub spec_draft_n_min: Option<u16>,
+    pub model_draft: Option<String>,
 
     pub vram: Option<u16>,
 }
@@ -218,9 +227,10 @@ impl LlamaConfig {
             p_row![label!("spec_type"), pick_list(NgramMethod::ALL, self.spec_type, Message::SpecTypeV)],
             option!("spec_draft_n_max", self.spec_draft_n_max, Message::SpecDraftNMax, Message::SpecDraftNMaxV ),
             option!("spec_draft_n_min", self.spec_draft_n_min, Message::SpecDraftNMin, Message::SpecDraftNMinV ),
+            option!("model_draft", self.model_draft.as_ref(), Message::ModelDraft, Message::ModelDraftV, 300, Message::ModelDraftSelect),
             option!["log_file", self.log_file.as_ref(), Message::LogFile, Message::LogFileV, 300],
         ].padding(PADDING).spacing(10.0);
-        scrollable(contents).width(900.0).height(390.0)
+        scrollable(contents).width(750.0).height(270.0)
     }
 
     
@@ -237,16 +247,16 @@ impl LlamaConfig {
                 slider(0..=256, self.ctx_size, Message::CtxChanged).width(250.0),
             ].padding(PADDING).spacing(SPACING),
             row![
-                label!("sel_model"), text_input("", &self.model_path).width(550.0), button_nf!("\u{f4d4}").on_press(Message::ModelFileSelect)
+                label!("sel_model"), text_input("", &self.model_path).width(400.0), button_nf!("\u{f4d4}").on_press(Message::ModelFileSelect)
             ].padding(PADDING).spacing(SPACING),
             row![
-                label!("mmproj"), text_input("", &mmproj).width(550.0), button_nf!("\u{f4d4}").on_press(Message::ModelMmprojSelect)
+                label!("mmproj"), text_input("", &mmproj).width(400.0), button_nf!("\u{f4d4}").on_press(Message::ModelMmprojSelect)
             ].padding(PADDING).spacing(SPACING),
             row![
-                label!("json_schema"), text_input("", &self.json_schema_file.clone().unwrap_or_default()).width(550.0), button_nf!("\u{f4d4}").on_press(Message::JsonSchemaFileSelect)
+                label!("json_schema"), text_input("", &self.json_schema_file.clone().unwrap_or_default()).width(400.0), button_nf!("\u{f4d4}").on_press(Message::JsonSchemaFileSelect)
             ].padding(PADDING).spacing(SPACING),
             row![
-                label!("chat_template"), text_input("", &self.chat_template.clone().unwrap_or_default()).width(550.0), button_nf!("\u{f4d4}").on_press(Message::ChatTemplateFileSelect)
+                label!("chat_template"), text_input("", &self.chat_template.clone().unwrap_or_default()).width(400.0), button_nf!("\u{f4d4}").on_press(Message::ChatTemplateFileSelect)
             ].padding(PADDING).spacing(SPACING),
             row![label!("advanced"), toggler(advanced).on_toggle(Message::Advanced)].padding(PADDING).spacing(SPACING),
             row![
@@ -305,7 +315,7 @@ impl LlamaConfig {
 
         if let Some(ref reasoning) = self.reasoning {
             if *reasoning {
-                cmd.arg("--reasoning");
+                cmd.arg("--reasoning").arg(if *reasoning {"on"} else {"off"});
             }
         }
         if let Some(ref threads) = self.threads {
@@ -381,7 +391,9 @@ impl LlamaConfig {
         if let Some(sd) = self.spec_draft_n_min {
             cmd.arg("--spec-draft-n-min").arg(sd.to_string());
         }
-
+        if let Some(ref model_draft) = self.model_draft {
+            cmd.arg("--model-draft").arg(model_draft);
+        }
         match self.spec_type {
             None | Some(NgramMethod::None) => {}
             Some(ng) => {

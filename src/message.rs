@@ -113,6 +113,9 @@ pub enum Message {
     SpecDraftNMaxV(String),
     SpecDraftNMin(bool),
     SpecDraftNMinV(String),
+    ModelDraft(bool),
+    ModelDraftV(String),
+    ModelDraftSelect,
 
     BeforeExit,
     Exit,

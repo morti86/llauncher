@@ -345,6 +345,26 @@ impl App {
                     }
                 });
             }
+            Message::ModelDraftSelect => {
+                return iced::Task::perform(async {
+                    if let Some(path) = rfd::AsyncFileDialog::new()
+                        .add_filter("GGUF Model", &["gguf"])
+                        .pick_file()
+                        .await
+                    {
+                        Some(path.path().to_string_lossy().to_string())
+                    } else {
+                        None
+                    }
+                }, |path| {
+                    if let Some(p) = path {
+                        Message::ModelDraftV(p)
+                    } else {
+                        Message::Void
+                    }
+                });
+            }
+
             Message::ModelMmprojSelect => {
                 return iced::Task::perform(async {
                     if let Some(path) = rfd::AsyncFileDialog::new()
@@ -652,6 +672,14 @@ impl App {
                 }
                 self.status = Some(event);
             }
+            Message::ModelDraft(m) => {
+                set_toggle!(model_draft, m, self.conf.get_config_mut(), String);
+            }
+            Message::ModelDraftV(m) => {
+                if let Some(c) = self.conf.get_config_mut() {
+                    c.model_draft = Some(m);
+                }
+            }
         }
         iced::Task::none()
     }
@@ -705,6 +733,8 @@ impl App {
 }
 
 pub fn run(theme: &str) -> Result<(), iced::Error> {
+    let mut settings = iced::Settings::default();
+    settings.default_text_size = iced::Pixels(14.0);
     debug!("Run with theme {}", theme);
     for e in iced::Theme::ALL {
         if theme.to_string() == e.to_string() {
@@ -713,6 +743,7 @@ pub fn run(theme: &str) -> Result<(), iced::Error> {
                 .window_size(iced::Size::new(config::W_WIDTH,config::W_HEIGHT))
                 .subscription(App::subscription)
                 .exit_on_close_request(false)
+                .settings(settings)
                 .font(FONT)
                 .run()
         }
@@ -722,6 +753,7 @@ pub fn run(theme: &str) -> Result<(), iced::Error> {
         .window_size(iced::Size::new(config::W_WIDTH,config::W_HEIGHT))
         .exit_on_close_request(false)
         .font(FONT)
+        .settings(settings)
         .run()?;
     Ok(())
 }
