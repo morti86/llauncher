@@ -2,12 +2,12 @@ use std::fmt::Debug;
 
 use crate::config::NgramMethod;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub enum ModelAction {
     Name(String),
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub enum Message {
     ModelSelected(String),
     ModelNew,
@@ -104,6 +104,7 @@ pub enum Message {
     Language(String),
 
     SpecTypeV(NgramMethod),
+    SpecTypeValue(NgramMethod, bool),
 
     Theme(iced::Theme),
     Tools(bool),
@@ -113,6 +114,8 @@ pub enum Message {
     SpecDraftNMaxV(String),
     SpecDraftNMin(bool),
     SpecDraftNMinV(String),
+    SpecDraftPMin(bool),
+    SpecDraftPMinV(String),
     ModelDraft(bool),
     ModelDraftV(String),
     ModelDraftSelect,

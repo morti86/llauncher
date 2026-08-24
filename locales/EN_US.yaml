@@ -34,8 +34,9 @@ chat_template_kwargs: 'sets additional params for the json template parser, must
 advanced: advanced
 special: 'special tokens output enabled (default: false)'
 spec_type: spec type
-spec_draft_n_max: 'number of tokens for speculative decoding (16)'
+spec_draft_n_max: 'number of tokens for speculative decoding (3)'
 spec_draft_n_min: 'minimum tokens for speculative decoding'
+spec_draft_p_min: 'minimum speculative decoding probability (greedy)'
 language: language
 st_running: 🟩 Running
 st_nlocfnd: ⬛️ Not found

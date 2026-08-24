@@ -33,7 +33,7 @@ temperature: temperatura
 chat_template_kwargs: 'dodatkowe parametry dla parsowania szablonu json'
 advanced: zaawansowane
 spec_type: dekodowanie spekulatywne
-spec_draft_n_max: 'liczba tokenów dla dek. spek. (16)'
+spec_draft_n_max: 'liczba tokenów dla dek. spek. (3)'
 spec_draft_n_min: 'min. l. tokenów dla dek. spek.'
 special: 'specjalne tokeny na wyjściu (dom: false)'
 language: język

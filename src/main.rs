@@ -545,7 +545,6 @@ impl App {
                 if let Some(model) = self.conf.get_config_mut() {
                     set_o_float!(model.top_p, tp, 0.0, 1.0);
                 }
-
             } 
             Message::MinP(tp) => {
                 set_toggle!(min_p, tp, self.conf.get_config_mut(), String);
@@ -595,9 +594,14 @@ impl App {
                     model.special = if s { Some(true) } else { None };
                 }
             }
-            Message::SpecTypeV(st) => {
+            Message::SpecTypeV(_st) => {
+                //if let Some(model) = self.conf.get_config_mut() {
+                //    model.spec_type = Some(st);
+                //}
+            }
+            Message::SpecTypeValue(m, v) => {
                 if let Some(model) = self.conf.get_config_mut() {
-                    model.spec_type = Some(st);
+                    model.spec_types.set(m, v);
                 }
             }
             Message::SpecDraftNMax(sd) => {
@@ -678,6 +682,14 @@ impl App {
             Message::ModelDraftV(m) => {
                 if let Some(c) = self.conf.get_config_mut() {
                     c.model_draft = Some(m);
+                }
+            }
+            Message::SpecDraftPMin(m) => {
+                set_toggle!(spec_draft_p_min, m, self.conf.get_config_mut(), String);
+            }
+            Message::SpecDraftPMinV(v) => {
+                if let Some(c) = self.conf.get_config_mut() {
+                    set_o_float!(c.spec_draft_p_min, v, 0.0, 1.0);
                 }
             }
         }

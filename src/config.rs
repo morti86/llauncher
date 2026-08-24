@@ -2,7 +2,7 @@
 use std::collections::BTreeMap;
 use std::fmt::Display;
 use iced::{Alignment, Font};
-use iced::widget::{Column, Scrollable, slider, button, checkbox, column, container, pick_list, row, scrollable, text, text_input, toggler};
+use iced::widget::{Column, Row, Scrollable, button, checkbox, column, container, pick_list, row, scrollable, slider, text, text_input, toggler};
 use serde::{Serialize, Deserialize};
 use tracing::debug;
 use crate::{make_enum, message::Message, button_nf};
@@ -78,7 +78,7 @@ impl Window {
     }
 }
 
-make_enum!(CacheType, [f32, f16, bf16, q8_0, q4_0, q4_1, iq4_nl, q5_0, q5_1, turbo2, turbo3, turbo4, iso3, planar3]);
+make_enum!(CacheType, [f32, f16, bf16, q8_0, q4_0, q4_1, iq4_nl, q5_0, q5_1]);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum NgramMethod {
@@ -94,6 +94,85 @@ pub enum NgramMethod {
 
 impl NgramMethod {
     const ALL: &[NgramMethod] = &[NgramMethod::None,NgramMethod::NgramCache,NgramMethod::NgramSimple,NgramMethod::NgramMapK,NgramMethod::NgramMapK4V,NgramMethod::NgramMod,NgramMethod::Mtp,NgramMethod::Eagle3];
+
+    pub fn element<'a>(&'a self, v: bool) -> Row<'a, Message> {
+        row![text(self.to_string()).width(150.0), checkbox(v).on_toggle(|v| Message::SpecTypeValue(*self, v))
+        ]
+    }
+}
+
+impl From<u8> for NgramMethod {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => NgramMethod::NgramCache,
+            2 => NgramMethod::NgramSimple,
+            4 => NgramMethod::NgramMapK,
+            8 => NgramMethod::NgramMapK4V,
+            16 => NgramMethod::NgramMod,
+            32 => NgramMethod::Mtp,
+            64 => NgramMethod::Eagle3,
+            _ => NgramMethod::None,
+        }
+    }
+}
+
+impl Into<u8> for NgramMethod {
+    fn into(self) -> u8 {
+        match self {
+            NgramMethod::None => 0,
+            NgramMethod::NgramCache => 1,
+            NgramMethod::NgramSimple => 2,
+            NgramMethod::NgramMapK => 4,
+            NgramMethod::NgramMapK4V => 8,
+            NgramMethod::NgramMod => 16,
+            NgramMethod::Mtp => 32,
+            NgramMethod::Eagle3 => 64,
+        }
+    }
+}
+
+#[derive(Clone,Default,Serialize,Deserialize,Debug,PartialEq)]
+pub struct NgramSelector {
+    selections: u8,
+}
+
+impl NgramSelector {
+    pub fn set(&mut self, m: NgramMethod, value: bool) {
+        let mv: u8 = m.into();
+        match value {
+            true => self.selections = self.selections | mv,
+            false => self.selections = self.selections ^ mv,
+        }        
+    }
+
+    pub fn element<'a>(&'a self) -> Column<'a, Message> {
+        column![
+            NgramMethod::NgramCache.element(self.selections & 1 > 0),
+            NgramMethod::NgramSimple.element(self.selections & 2 > 0),
+            NgramMethod::NgramMapK.element(self.selections & 4 > 0),
+            NgramMethod::NgramMapK4V.element(self.selections & 8 > 0),
+            NgramMethod::NgramMod.element(self.selections & 16 > 0),
+            NgramMethod::Mtp.element(self.selections & 32 > 0),
+            NgramMethod::Eagle3.element(self.selections & 64 > 0),
+        ]
+    }
+
+    pub fn selections(&self) -> String {
+        let mut i: u8 = 1;
+        let mut temp: Vec<String> = vec![];
+        while i <= 64 {
+            let m: NgramMethod = i.into();
+            if m != NgramMethod::None && self.selections & i > 0 {
+                temp.push(m.to_string());
+            }
+            i = i << 1;
+        }
+        temp.join(",")
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.selections == 0
+    }
 }
 
 impl Display for NgramMethod {
@@ -163,9 +242,11 @@ pub struct LlamaConfig {
 
     pub tools: Option<bool>,
     pub special: Option<bool>,
-    pub spec_type: Option<NgramMethod>,
+    #[serde(default)]
+    pub spec_types: NgramSelector,
     pub spec_draft_n_max: Option<u16>,
     pub spec_draft_n_min: Option<u16>,
+    pub spec_draft_p_min: Option<String>,
     pub model_draft: Option<String>,
 
     pub vram: Option<u16>,
@@ -224,9 +305,10 @@ impl LlamaConfig {
             p_row![label!("chat_template_kwargs"), text_input("", &self.chat_template_kwargs.clone().unwrap_or_default()).width(350.0).on_input(Message::ChatKwargsV) ],
             p_row![label!("tools"), toggler(self.tools.unwrap_or_default()).on_toggle(Message::Tools)],
             p_row![label!("special"), toggler(self.special.unwrap_or_default()).on_toggle(Message::Special)],
-            p_row![label!("spec_type"), pick_list(NgramMethod::ALL, self.spec_type, Message::SpecTypeV)],
+            row![label!("spec_type"), self.spec_types.element()],
             option!("spec_draft_n_max", self.spec_draft_n_max, Message::SpecDraftNMax, Message::SpecDraftNMaxV ),
             option!("spec_draft_n_min", self.spec_draft_n_min, Message::SpecDraftNMin, Message::SpecDraftNMinV ),
+            option!("spec_draft_p_min", self.spec_draft_p_min.as_ref(), Message::SpecDraftPMin, Message::SpecDraftPMinV ),
             option!("model_draft", self.model_draft.as_ref(), Message::ModelDraft, Message::ModelDraftV, 300, Message::ModelDraftSelect),
             option!["log_file", self.log_file.as_ref(), Message::LogFile, Message::LogFileV, 300],
         ].padding(PADDING).spacing(10.0);
@@ -394,16 +476,16 @@ impl LlamaConfig {
         if let Some(ref model_draft) = self.model_draft {
             cmd.arg("--model-draft").arg(model_draft);
         }
-        match self.spec_type {
-            None | Some(NgramMethod::None) => {}
-            Some(ng) => {
-                cmd.arg("--spec-type").arg(ng.to_string());
-            }
+        if !self.spec_types.is_empty() {
+            cmd.arg("--spec-type").arg(&self.spec_types.selections());
+        }
+        if let Some(pmin)     = &self.spec_draft_p_min {
+            cmd.arg("--spec-draft-p-min").arg(pmin);
         }
         if !self.mmap {
             cmd.arg("--no-mmap");
         }
-
+        tracing::info!("Command {:?}", cmd);
         Some(cmd)
     }
 }
